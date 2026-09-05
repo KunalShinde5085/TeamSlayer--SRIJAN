@@ -14,7 +14,7 @@
 // no longer seeds fake data automatically (see js/demo.js).
 
 window.FLOWMATE_CONFIG = {
-  SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR-SUPABASE-ANON-PUBLIC-KEY",
+  SUPABASE_URL: "https://mgojwbybuxmhznytseyk.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_KOtDsSYBmWOOzR2pCbZv1w_TfIhCtnl",
   DEMO_MODE: false
 };
