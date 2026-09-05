@@ -1,0 +1,13 @@
+{
+  "name": "flowmate-ai-work-automation",
+  "version": "1.0.0",
+  "description": "FlowMate — AI-powered everyday work automation for teams. Hackathon prototype.",
+  "private": true,
+  "scripts": {
+    "dev": "npx vercel dev",
+    "start": "npx serve ."
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FlowMate — Say it once, it runs itself</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">Flow<span>Mate</span></div>
+    <div class="nav" id="nav">
+      <button data-view="dashboard" class="active">Dashboard</button>
+      <button data-view="inbox">AI Inbox</button>
+      <button data-view="tasks">My Tasks</button>
+      <button data-view="team">Team</button>
+      <button data-view="routines">Routines</button>
+      <button data-view="notifications" class="has-alert">Notifications <span class="dot"></span></button>
+      <button data-view="progress">Progress</button>
+    </div>
+    <div class="sidebar-foot">AI Inbox is powered by a real AI call — parsing happens server-side, your API key never touches the browser.</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="page-head">
+        <h1>Good to see you.</h1>
+        <p>Here's what FlowMate is tracking for you today.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Today &amp; upcoming</h3>
+          <div class="sub">Tasks due soonest first</div>
+          <div id="dashTaskList"></div>
+        </div>
+        <div class="card">
+          <h3>Overall progress</h3>
+          <div class="sub" id="progressSub">Across all active tasks</div>
+          <div class="progress-num" id="progressNum">0%</div>
+          <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div></div>
+          <button class="behind-btn" id="behindBtn">I'm behind</button>
+          <div id="planZone"></div>
+        </div>
+        <div class="card">
+          <h3>Active routines</h3>
+          <div class="sub">Recurring reminders FlowMate is running</div>
+          <div id="dashRoutineList"></div>
+        </div>
+        <div class="card">
+          <h3>Recent notifications</h3>
+          <div class="sub">Last few things worth knowing</div>
+          <div id="dashNotifList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI INBOX -->
+    <div class="view" id="view-inbox">
+      <div class="page-head">
+        <h1>AI Inbox</h1>
+        <p>Type an instruction the way you'd say it to a teammate. FlowMate turns it into tasks, deadlines, assignments and reminders.</p>
+      </div>
+      <div class="inbox-card">
+        <div class="inbox-label">Write a message</div>
+        <div class="inbox-row">
+          <textarea id="inboxInput" placeholder="e.g. Prepare the monthly sales report by Friday, assign the presentation to Rahul, and remind me every morning to work on it."></textarea>
+          <button class="send" id="sendBtn">Send</button>
+        </div>
+        <div class="examples">
+          <button class="example-chip" data-ex="1">Sales report example</button>
+          <button class="example-chip" data-ex="2">Client onboarding example</button>
+          <button class="example-chip" data-ex="3">Weekly standup example</button>
+        </div>
+      </div>
+      <div id="processingZone"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="view" id="view-tasks">
+      <div class="page-head"><h1>My Tasks</h1><p>Everything FlowMate has created from your instructions.</p></div>
+      <div class="card"><div id="fullTaskList"></div></div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="view" id="view-team">
+      <div class="page-head"><h1>Team</h1><p>Who's carrying what, and how it's going.</p></div>
+      <div class="card"><div id="teamList"></div></div>
+    </div>
+
+    <!-- ROUTINES -->
+    <div class="view" id="view-routines">
+      <div class="page-head"><h1>Routines</h1><p>Reminders that repeat on their own.</p></div>
+      <div class="card"><div id="fullRoutineList"></div></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="view" id="view-notifications">
+      <div class="page-head"><h1>Notifications</h1><p>Deadlines, misses and reminders, in order.</p></div>
+      <div class="card"><div id="fullNotifList"></div></div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="view" id="view-progress">
+      <div class="page-head"><h1>Progress</h1><p>A wider view of completion across everything active.</p></div>
+      <div class="card" style="max-width:420px;">
+        <h3>Completion</h3>
+        <div class="progress-num" id="progressNum2">0%</div>
+        <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill2" style="width:0%"></div></div></div>
+        <div class="sub" style="margin-top:14px;" id="progressBreak"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- Supabase client library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Browser-safe config (Supabase URL + anon key). Copy config/env.example.js to config/env.js. -->
+<script src="config/env.js"></script>
+
+<!-- App modules -->
+<script src="js/supabase.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/routines.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
