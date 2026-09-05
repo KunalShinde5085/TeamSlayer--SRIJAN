@@ -11,7 +11,7 @@ window.FlowMateAI = (() => {
   }
 
   const ENDPOINT =
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
   // Turns a natural-language inbox message into structured JSON:
   // { tasks: [...], assignments: [...], routines: [...], notifications: [...] }
