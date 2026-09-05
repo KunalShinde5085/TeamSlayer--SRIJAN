@@ -3,8 +3,9 @@
 // It only calls our own serverless endpoint, which holds the key server-side.
 
 const FlowMateAI = (() => {
-  const ENDPOINT = "/api/flowmate-ai";
-
+ const API_KEY = window.FLOWMATE_CONFIG.GEMINI_API_KEY;
+const MODEL = "gemini-2.0-flash";
+const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
   // Turns a natural-language inbox message into structured JSON:
   // { tasks: [...], assignments: [...], routines: [...], notifications: [...] }
   async function parseInstruction(text) {
@@ -19,12 +20,23 @@ const FlowMateAI = (() => {
 
   async function callApi(payload) {
     let response;
-    try {
-      response = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+   response = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        contents: [
+            {
+                parts: [
+                    {
+                        text: payload.text || JSON.stringify(payload)
+                    }
+                ]
+            }
+        ]
+    })
+});
     } catch (networkErr) {
       throw new FlowMateAIError("FlowMate couldn't reach the server. Check your connection and try again.");
     }
