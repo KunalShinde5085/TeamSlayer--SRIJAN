@@ -2,7 +2,7 @@
 // The browser NEVER talks to the AI provider directly and never sees AI_API_KEY.
 // It only calls our own serverless endpoint, which holds the key server-side.
 
-const FlowMateAI = (() => {
+window.FlowMateAI = (() => {
  const API_KEY = window.FLOWMATE_CONFIG.GEMINI_API_KEY;
 const MODEL = "gemini-2.0-flash";
  
