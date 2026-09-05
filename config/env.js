@@ -16,6 +16,6 @@
 window.FLOWMATE_CONFIG = {
   SUPABASE_URL: "https://mgojwbybuxmhznytseyk.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_KOtDsSYBmWOOzR2pCbZv1w_TfIhCtnl",
-   GEMINI_API_KEY: "AQ.Ab8RN6J6oF28TZAFrlaK7nsF00ZytGln97S6D9pYoERS7_3A1Q",
+   GEMINI_API_KEY: "AQ.Ab8RN6J3vjpPL6MAK3k-ddYE3lloM-Emnypw67MQVJbcHftBqQ",
   DEMO_MODE: false
 };
