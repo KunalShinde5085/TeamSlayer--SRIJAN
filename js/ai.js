@@ -37,9 +37,12 @@ window.FlowMateAI = (() => {
     try {
       response = await fetch(ENDPOINT, {
         method: "POST",
+
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-goog-api-key": API_KEY
         },
+
         body: JSON.stringify({
           contents: [
             {
@@ -64,6 +67,7 @@ ${payload.text || JSON.stringify(payload)}
               ]
             }
           ],
+
           generationConfig: {
             responseMimeType: "application/json"
           }
@@ -87,10 +91,15 @@ ${payload.text || JSON.stringify(payload)}
         // Ignore JSON parsing errors
       }
 
-      console.error("Gemini API error:", response.status, detail);
+      console.error(
+        "Gemini API error:",
+        response.status,
+        detail
+      );
 
       throw new FlowMateAIError(
-        detail || `Gemini couldn't process the request (Error ${response.status}).`
+        detail ||
+        `Gemini couldn't process the request (Error ${response.status}).`
       );
     }
 
@@ -109,7 +118,10 @@ ${payload.text || JSON.stringify(payload)}
       json?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!aiText) {
-      console.error("Unexpected Gemini response:", json);
+      console.error(
+        "Unexpected Gemini response:",
+        json
+      );
 
       throw new FlowMateAIError(
         "Gemini returned an empty response. Try again."
@@ -120,7 +132,10 @@ ${payload.text || JSON.stringify(payload)}
     try {
       return JSON.parse(aiText);
     } catch (_) {
-      console.error("Invalid JSON from Gemini:", aiText);
+      console.error(
+        "Invalid JSON from Gemini:",
+        aiText
+      );
 
       throw new FlowMateAIError(
         "Gemini returned invalid JSON. Try again."
