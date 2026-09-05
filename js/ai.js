@@ -78,7 +78,11 @@ if (!aiText) {
     throw new FlowMateAIError("Gemini returned an empty response. Try again.");
 }
 
-return aiText;
+try {
+    return JSON.parse(aiText);
+} catch (_) {
+    throw new FlowMateAIError("Gemini returned invalid JSON. Try again.");
+}
   }
 
   return { parseInstruction, generateRecoveryPlan };
