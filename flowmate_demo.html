@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FlowMate — Say it once, it runs itself</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #EDEEE7;
+    --surface: #FFFFFF;
+    --surface-sunk: #E3E5DC;
+    --ink: #1F2A22;
+    --ink-soft: #5B6B5F;
+    --pine: #2F5D4F;
+    --pine-deep: #1D3F35;
+    --amber: #C9622A;
+    --amber-soft: #F1DDC9;
+    --mint: #7FB69E;
+    --mint-soft: #E1EFE8;
+    --line: #D6D8CD;
+    --radius-lg: 18px;
+    --radius-sm: 8px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:15px;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;}
+  .app{display:flex;min-height:100vh;}
+
+  /* sidebar */
+  .sidebar{width:220px;background:var(--pine-deep);color:#EAF1EC;flex-shrink:0;padding:28px 16px;display:flex;flex-direction:column;gap:28px;}
+  .brand{font-family:'Fraunces',serif;font-size:22px;font-weight:600;letter-spacing:0.2px;padding:0 8px;}
+  .brand span{color:var(--mint);}
+  .nav{display:flex;flex-direction:column;gap:2px;}
+  .nav button{all:unset;cursor:pointer;padding:10px 12px;border-radius:var(--radius-sm);color:#C9D8CE;font-size:14px;display:flex;align-items:center;gap:10px;transition:background .15s ease, color .15s ease;}
+  .nav button:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav button.active{background:var(--pine);color:#fff;}
+  .nav .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);opacity:0;}
+  .nav button.has-alert .dot{opacity:1;}
+  .sidebar-foot{margin-top:auto;font-size:12px;color:#7E9689;padding:0 8px;line-height:1.5;}
+
+  /* main */
+  .main{flex:1;padding:36px 44px;max-width:1100px;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .page-head{margin-bottom:26px;}
+  .page-head h1{font-size:28px;color:var(--ink);}
+  .page-head p{color:var(--ink-soft);margin-top:6px;font-size:14.5px;}
+
+  /* AI inbox hero */
+  .inbox-card{background:var(--surface);border-radius:var(--radius-lg);padding:26px 28px;box-shadow:0 1px 0 var(--line);border:1px solid var(--line);}
+  .inbox-label{font-size:13px;color:var(--ink-soft);margin-bottom:10px;}
+  .inbox-row{display:flex;gap:12px;align-items:flex-end;}
+  textarea#inboxInput{flex:1;resize:none;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.5;min-height:64px;background:var(--surface-sunk);color:var(--ink);}
+  textarea#inboxInput:focus{outline:none;border-color:var(--pine);background:#fff;}
+  button.send{all:unset;cursor:pointer;background:var(--pine);color:#fff;padding:14px 22px;border-radius:var(--radius-sm);font-size:14.5px;font-weight:500;white-space:nowrap;transition:background .15s ease;}
+  button.send:hover{background:var(--pine-deep);}
+  .examples{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
+  .example-chip{all:unset;cursor:pointer;font-size:12.5px;color:var(--ink-soft);border:1px solid var(--line);padding:6px 12px;border-radius:20px;}
+  .example-chip:hover{border-color:var(--pine);color:var(--pine);}
+
+  /* processing reveal */
+  #processingZone{margin-top:18px;}
+  .automation-result{background:var(--pine-deep);color:#EAF1EC;border-radius:var(--radius-lg);padding:22px 24px;animation:riseIn .35s ease;}
+  @keyframes riseIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .automation-result .head{font-size:13px;letter-spacing:.3px;color:var(--mint);margin-bottom:14px;}
+  .autom-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid rgba(255,255,255,0.08);}
+  .autom-item:first-of-type{border-top:none;}
+  .autom-item .icon{font-size:18px;}
+  .autom-item .txt strong{display:block;font-size:14.5px;}
+  .autom-item .txt span{font-size:13px;color:#B9CBC0;}
+
+  /* card grid */
+  .grid{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-top:22px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;}
+  .card h3{font-size:16px;margin-bottom:4px;}
+  .card .sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:14px;}
+  .task-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);}
+  .task-row:first-of-type{border-top:none;}
+  .task-row .check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--ink-soft);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .task-row .check.done{background:var(--mint);border-color:var(--mint);color:#fff;}
+  .task-row .name{flex:1;font-size:14.5px;}
+  .task-row .name.done{text-decoration:line-through;color:var(--ink-soft);}
+  .badge{font-size:11.5px;padding:3px 9px;border-radius:20px;font-family:'IBM Plex Mono',monospace;}
+  .badge.due{background:var(--amber-soft);color:var(--amber);}
+  .badge.overdue{background:#F4CFC0;color:#9C3A12;}
+  .badge.ok{background:var(--mint-soft);color:#2F6B52;}
+
+  .progress-wrap{margin-top:8px;}
+  .progress-track{background:var(--surface-sunk);border-radius:20px;height:9px;overflow:hidden;}
+  .progress-fill{background:var(--pine);height:100%;border-radius:20px;transition:width .4s ease;}
+  .progress-num{font-family:'IBM Plex Mono',monospace;font-size:22px;color:var(--pine-deep);margin-top:8px;}
+
+  .behind-btn{all:unset;cursor:pointer;margin-top:16px;display:inline-block;background:var(--amber);color:#fff;padding:11px 18px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;}
+  .behind-btn:hover{background:#A94E1E;}
+
+  .plan-card{margin-top:16px;background:var(--amber-soft);border-radius:var(--radius-sm);padding:16px 18px;animation:riseIn .3s ease;}
+  .plan-card h4{font-size:14px;color:#8C3E14;margin-bottom:10px;}
+  .plan-row{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-top:1px solid rgba(140,62,20,0.15);}
+  .plan-row:first-of-type{border-top:none;}
+  .apply-btn{all:unset;cursor:pointer;margin-top:12px;background:var(--pine-deep);color:#fff;padding:9px 16px;border-radius:6px;font-size:13px;}
+
+  .notif-row{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);}
+  .notif-row:first-of-type{border-top:none;}
+  .notif-row .icon{font-size:16px;}
+  .notif-row .body strong{font-size:14px;display:block;}
+  .notif-row .body span{font-size:12.5px;color:var(--ink-soft);}
+
+  .team-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line);}
+  .team-row:first-of-type{border-top:none;}
+  .avatar{width:36px;height:36px;border-radius:50%;background:var(--pine);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+  .team-info{flex:1;}
+  .team-info strong{display:block;font-size:14.5px;}
+  .team-info span{font-size:12.5px;color:var(--ink-soft);}
+  .mini-track{width:110px;height:6px;background:var(--surface-sunk);border-radius:10px;overflow:hidden;}
+  .mini-fill{height:100%;background:var(--mint);}
+
+  .routine-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--line);}
+  .routine-row:first-of-type{border-top:none;}
+  .routine-row .name{font-size:14.5px;}
+  .routine-row .freq{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);}
+
+  .empty{color:var(--ink-soft);font-size:14px;padding:18px 0;text-align:center;}
+  select.assign-select{font-family:'IBM Plex Sans',sans-serif;font-size:13px;border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:#fff;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">Flow<span>Mate</span></div>
+    <div class="nav" id="nav">
+      <button data-view="dashboard" class="active">Dashboard</button>
+      <button data-view="inbox">AI Inbox</button>
+      <button data-view="tasks">My Tasks</button>
+      <button data-view="team">Team</button>
+      <button data-view="routines">Routines</button>
+      <button data-view="notifications" class="has-alert">Notifications <span class="dot"></span></button>
+      <button data-view="progress">Progress</button>
+    </div>
+    <div class="sidebar-foot">Demo build — parsing runs entirely in this page, nothing is sent anywhere.</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="page-head">
+        <h1>Good to see you.</h1>
+        <p>Here's what FlowMate is tracking for you today.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Today &amp; upcoming</h3>
+          <div class="sub">Tasks due soonest first</div>
+          <div id="dashTaskList"></div>
+        </div>
+        <div class="card">
+          <h3>Overall progress</h3>
+          <div class="sub" id="progressSub">Across all active tasks</div>
+          <div class="progress-num" id="progressNum">0%</div>
+          <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div></div>
+          <button class="behind-btn" id="behindBtn">I'm behind</button>
+          <div id="planZone"></div>
+        </div>
+        <div class="card">
+          <h3>Active routines</h3>
+          <div class="sub">Recurring reminders FlowMate is running</div>
+          <div id="dashRoutineList"></div>
+        </div>
+        <div class="card">
+          <h3>Recent notifications</h3>
+          <div class="sub">Last few things worth knowing</div>
+          <div id="dashNotifList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI INBOX -->
+    <div class="view" id="view-inbox">
+      <div class="page-head">
+        <h1>AI Inbox</h1>
+        <p>Type an instruction the way you'd say it to a teammate. FlowMate turns it into tasks, deadlines, assignments and reminders.</p>
+      </div>
+      <div class="inbox-card">
+        <div class="inbox-label">Write a message</div>
+        <div class="inbox-row">
+          <textarea id="inboxInput" placeholder="e.g. Prepare the monthly sales report by Friday, assign the presentation to Rahul, and remind me every morning to work on it."></textarea>
+          <button class="send" id="sendBtn">Send</button>
+        </div>
+        <div class="examples">
+          <button class="example-chip" data-ex="1">Sales report example</button>
+          <button class="example-chip" data-ex="2">Client onboarding example</button>
+          <button class="example-chip" data-ex="3">Weekly standup example</button>
+        </div>
+      </div>
+      <div id="processingZone"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="view" id="view-tasks">
+      <div class="page-head"><h1>My Tasks</h1><p>Everything FlowMate has created from your instructions.</p></div>
+      <div class="card"><div id="fullTaskList"></div></div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="view" id="view-team">
+      <div class="page-head"><h1>Team</h1><p>Who's carrying what, and how it's going.</p></div>
+      <div class="card"><div id="teamList"></div></div>
+    </div>
+
+    <!-- ROUTINES -->
+    <div class="view" id="view-routines">
+      <div class="page-head"><h1>Routines</h1><p>Reminders that repeat on their own.</p></div>
+      <div class="card"><div id="fullRoutineList"></div></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="view" id="view-notifications">
+      <div class="page-head"><h1>Notifications</h1><p>Deadlines, misses and reminders, in order.</p></div>
+      <div class="card"><div id="fullNotifList"></div></div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="view" id="view-progress">
+      <div class="page-head"><h1>Progress</h1><p>A wider view of completion across everything active.</p></div>
+      <div class="card" style="max-width:420px;">
+        <h3>Completion</h3>
+        <div class="progress-num" id="progressNum2">0%</div>
+        <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill2" style="width:0%"></div></div></div>
+        <div class="sub" style="margin-top:14px;" id="progressBreak"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ---------- state ---------- */
+let taskSeq = 0, routineSeq = 0, notifSeq = 0;
+const team = ["Rahul","Aisha","Wei","You"];
+const tasks = [];      // {id, name, assignee, due, doneAt:null, overdue:false}
+const routines = [];   // {id, name, freq}
+const notifications = []; // {id, icon, title, sub, ts}
+
+const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+function addNotif(icon, title, sub){
+  notifSeq++;
+  notifications.unshift({id:notifSeq, icon, title, sub});
+  renderAll();
+}
+
+/* ---------- naive language parser (rule-based, runs locally) ---------- */
+function parseInstruction(raw){
+  const results = { mainTasks: [], assignments: [], reminders: [] };
+  // split into clauses on commas / " and "
+  let clauses = raw.split(/,| and /i).map(c=>c.trim()).filter(Boolean);
+
+  clauses.forEach(clause=>{
+    const lower = clause.toLowerCase();
+
+    if(/remind me/.test(lower)){
+      let freq = "Daily";
+      if(/every morning/.test(lower)) freq = "Every morning";
+      else if(/every day|daily/.test(lower)) freq = "Every day";
+      else if(/every week|weekly/.test(lower)) freq = "Every week";
+      results.reminders.push({freq});
+      return;
+    }
+
+    const assignMatch = clause.match(/assign (?:the )?(.*?) to ([A-Z][a-z]+)/i);
+    if(assignMatch){
+      results.assignments.push({ task: titleCase(assignMatch[1].trim()), person: capitalize(assignMatch[2].trim()) });
+      return;
+    }
+
+    // otherwise treat as a main task; look for a deadline
+    let due = null;
+    const byMatch = lower.match(/by (next )?(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/);
+    if(byMatch){
+      due = capitalize(byMatch[2]);
+      if(byMatch[1]) due = "Next " + due;
+    } else if(/today/.test(lower)) due = "Today";
+    else if(/tomorrow/.test(lower)) due = "Tomorrow";
+
+    let name = clause
+      .replace(/^i need to /i,"").replace(/^i have to /i,"").replace(/^please /i,"")
+      .replace(/by (next )?(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,"")
+      .trim();
+    name = titleCase(name);
+    if(name.length > 0){
+      results.mainTasks.push({ name, due: due || "No deadline set" });
+    }
+  });
+
+  return results;
+}
+function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function titleCase(s){
+  return s.split(" ").map(w => w.length>3 ? capitalize(w) : w).join(" ").trim().replace(/^./,c=>c.toUpperCase());
+}
+
+/* ---------- turning a parse into real state ---------- */
+function commitParse(parsed){
+  const createdCards = [];
+  const createdTasks = [];
+
+  parsed.mainTasks.forEach(mt=>{
+    taskSeq++;
+    const t = { id: taskSeq, name: mt.name, assignee: "You", due: mt.due, doneAt: null, overdue:false };
+    tasks.push(t);
+    createdTasks.push(t);
+    createdCards.push({icon:"📊", title:t.name, sub:"Deadline: "+t.due});
+    addNotifSilent("🗓️", "New task created", t.name + " — due " + t.due);
+  });
+
+  parsed.assignments.forEach(a=>{
+    // attach to most recent task if names relate, else create a standalone task
+    let target = createdTasks[createdTasks.length-1];
+    if(!target){
+      taskSeq++;
+      target = { id: taskSeq, name: a.task, assignee:a.person, due:"No deadline set", doneAt:null, overdue:false };
+      tasks.push(target);
+    } else {
+      target.assignee = a.person;
+    }
+    createdCards.push({icon:"👤", title:a.task || target.name, sub:"Assigned to "+a.person});
+    addNotifSilent("👤", a.person+" was assigned a task", target.name);
+  });
+
+  parsed.reminders.forEach(r=>{
+    routineSeq++;
+    routines.push({id:routineSeq, name:(createdTasks[0]?createdTasks[0].name:"Reminder"), freq:r.freq});
+    createdCards.push({icon:"🔔", title:"Reminder set", sub:r.freq});
+    addNotifSilent("🔔", "Recurring reminder created", r.freq+" — "+(createdTasks[0]?createdTasks[0].name:""));
+  });
+
+  return createdCards;
+}
+function addNotifSilent(icon,title,sub){
+  notifSeq++;
+  notifications.unshift({id:notifSeq, icon, title, sub});
+}
+
+/* ---------- "I'm behind" catch-up plan ---------- */
+function generatePlan(){
+  const openTasks = tasks.filter(t=>!t.doneAt);
+  if(openTasks.length === 0) return null;
+  // mark up to 2 as overdue for the demo
+  const overdue = openTasks.slice(0, Math.min(2, openTasks.length));
+  overdue.forEach(t=>t.overdue = true);
+
+  const today = new Date();
+  const stepNames = ["Gather the data","Do the analysis","Draft the report","Final review"];
+  const plan = [];
+  for(let i=0;i<4;i++){
+    const d = new Date(today); d.setDate(today.getDate()+i);
+    plan.push({ label: i===0 ? "Today" : days[d.getDay()], step: stepNames[i] });
+  }
+  addNotifSilent("⚠️", overdue.length+" task(s) overdue","Recovery plan generated");
+  return plan;
+}
+
+/* ---------- rendering ---------- */
+function fmtBadge(t){
+  if(t.doneAt) return '<span class="badge ok">Done</span>';
+  if(t.overdue) return '<span class="badge overdue">Overdue</span>';
+  return '<span class="badge due">'+t.due+'</span>';
+}
+function taskRow(t, withAssignSelect){
+  const assignHtml = withAssignSelect
+    ? `<select class="assign-select" onchange="reassign(${t.id}, this.value)">${team.map(n=>`<option ${n===t.assignee?'selected':''}>${n}</option>`).join('')}</select>`
+    : `<span class="badge" style="background:var(--surface-sunk);color:var(--ink-soft);">${t.assignee}</span>`;
+  return `<div class="task-row">
+    <div class="check ${t.doneAt?'done':''}" onclick="toggleDone(${t.id})">${t.doneAt?'✓':''}</div>
+    <div class="name ${t.doneAt?'done':''}">${t.name}</div>
+    ${assignHtml}
+    ${fmtBadge(t)}
+  </div>`;
+}
+function toggleDone(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.doneAt = t.doneAt ? null : Date.now();
+  if(t.doneAt) t.overdue = false;
+  renderAll();
+}
+function reassign(id, person){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.assignee = person;
+  addNotifSilent("👤", "Reassigned", t.name+" → "+person);
+  renderAll();
+}
+
+function renderAll(){
+  // dashboard task list (top 5 open, soonest-ish)
+  const open = tasks.filter(t=>!t.doneAt);
+  const dashList = document.getElementById('dashTaskList');
+  dashList.innerHTML = tasks.length===0
+    ? '<div class="empty">No tasks yet — try the AI Inbox.</div>'
+    : tasks.slice(-5).reverse().map(t=>taskRow(t,false)).join('');
+
+  // full task list
+  document.getElementById('fullTaskList').innerHTML = tasks.length===0
+    ? '<div class="empty">Nothing here yet.</div>'
+    : tasks.slice().reverse().map(t=>taskRow(t,true)).join('');
+
+  // routines
+  const routineHtml = routines.length===0
+    ? '<div class="empty">No routines yet.</div>'
+    : routines.map(r=>`<div class="routine-row"><span class="name">${r.name}</span><span class="freq">${r.freq}</span></div>`).join('');
+  document.getElementById('dashRoutineList').innerHTML = routineHtml;
+  document.getElementById('fullRoutineList').innerHTML = routineHtml;
+
+  // notifications
+  const notifHtml = notifications.length===0
+    ? '<div class="empty">Nothing yet.</div>'
+    : notifications.map(n=>`<div class="notif-row"><div class="icon">${n.icon}</div><div class="body"><strong>${n.title}</strong><span>${n.sub}</span></div></div>`).join('');
+  document.getElementById('dashNotifList').innerHTML = notifications.slice(0,4).map(n=>`<div class="notif-row"><div class="icon">${n.icon}</div><div class="body"><strong>${n.title}</strong><span>${n.sub}</span></div></div>`).join('') || '<div class="empty">Nothing yet.</div>';
+  document.getElementById('fullNotifList').innerHTML = notifHtml;
+
+  // team
+  document.getElementById('teamList').innerHTML = team.map(person=>{
+    const mine = tasks.filter(t=>t.assignee===person);
+    const done = mine.filter(t=>t.doneAt).length;
+    const pct = mine.length ? Math.round(done/mine.length*100) : 0;
+    return `<div class="team-row">
+      <div class="avatar">${person.slice(0,2).toUpperCase()}</div>
+      <div class="team-info"><strong>${person}</strong><span>${mine.length} task${mine.length===1?'':'s'} assigned</span></div>
+      <div class="mini-track"><div class="mini-fill" style="width:${pct}%"></div></div>
+      <span class="badge" style="background:var(--surface-sunk);color:var(--ink-soft);">${pct}%</span>
+    </div>`;
+  }).join('');
+
+  // progress
+  const total = tasks.length;
+  const done = tasks.filter(t=>t.doneAt).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  ['progressFill','progressFill2'].forEach(id=>document.getElementById(id).style.width = pct+'%');
+  ['progressNum','progressNum2'].forEach(id=>document.getElementById(id).textContent = pct+'%');
+  document.getElementById('progressSub').textContent = total ? `${done} of ${total} tasks complete` : 'Across all active tasks';
+  document.getElementById('progressBreak').textContent = total ? `${done} done · ${total-done} open · ${tasks.filter(t=>t.overdue).length} overdue` : 'No tasks yet.';
+}
+
+/* ---------- AI inbox flow ---------- */
+function runInbox(text){
+  if(!text.trim()) return;
+  const parsed = parseInstruction(text);
+  const cards = commitParse(parsed);
+  const zone = document.getElementById('processingZone');
+  if(cards.length === 0){
+    zone.innerHTML = `<div class="automation-result"><div class="head">AI PROCESSING</div><div class="autom-item"><div class="icon">🤔</div><div class="txt"><strong>Couldn't find a clear task in that.</strong><span>Try naming what to do and when it's due.</span></div></div></div>`;
+    return;
+  }
+  zone.innerHTML = `<div class="automation-result">
+    <div class="head">✨ AUTOMATION CREATED</div>
+    ${cards.map(c=>`<div class="autom-item"><div class="icon">${c.icon}</div><div class="txt"><strong>${c.title}</strong><span>${c.sub}</span></div></div>`).join('')}
+  </div>`;
+  renderAll();
+}
+
+document.getElementById('sendBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('inboxInput');
+  runInbox(input.value);
+  input.value = "";
+});
+document.getElementById('inboxInput').addEventListener('keydown', e=>{
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('sendBtn').click(); }
+});
+
+const examples = {
+  "1": "Prepare the monthly sales report by Friday, assign the presentation to Rahul, and remind me every morning to work on it.",
+  "2": "Set up the client onboarding checklist by Tuesday and assign the welcome call to Aisha.",
+  "3": "Write the weekly standup notes by tomorrow and remind me every day to send them."
+};
+document.querySelectorAll('.example-chip').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.getElementById('inboxInput').value = examples[btn.dataset.ex];
+  });
+});
+
+/* ---------- I'm behind ---------- */
+document.getElementById('behindBtn').addEventListener('click', ()=>{
+  const plan = generatePlan();
+  const zone = document.getElementById('planZone');
+  if(!plan){
+    zone.innerHTML = `<div class="plan-card"><h4>Nothing overdue</h4><div class="empty">All caught up — add a task from the AI Inbox first.</div></div>`;
+    return;
+  }
+  zone.innerHTML = `<div class="plan-card">
+    <h4>⚠️ Recovery plan</h4>
+    ${plan.map(p=>`<div class="plan-row"><span>${p.label}</span><span>${p.step}</span></div>`).join('')}
+    <button class="apply-btn" id="applyPlanBtn">Apply new plan</button>
+  </div>`;
+  renderAll();
+  document.getElementById('applyPlanBtn').addEventListener('click', ()=>{
+    addNotifSilent("✅","Recovery plan applied","Schedule updated for overdue tasks");
+    zone.innerHTML = `<div class="plan-card"><h4>Plan applied</h4><div class="empty">Overdue tasks are back on a schedule.</div></div>`;
+    renderAll();
+  });
+});
+
+/* ---------- nav ---------- */
+document.getElementById('nav').addEventListener('click', e=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+btn.dataset.view).classList.add('active');
+});
+
+/* ---------- seed with one example so dashboard isn't empty ---------- */
+runInbox("Prepare the monthly sales report by Friday, assign the presentation to Rahul, and remind me every morning to work on it.");
+document.getElementById('processingZone').innerHTML = "";
+</script>
+</body>
+</html>
