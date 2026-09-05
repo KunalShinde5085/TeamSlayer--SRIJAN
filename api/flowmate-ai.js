@@ -82,7 +82,13 @@ export default async function handler(req, res) {
 // Isolated so the model/provider can be swapped without touching the rest
 // of the app — only this function needs to change.
 async function callModel({ apiKey, system, user }) {
-  const model = process.env.AI_MODEL || "claude-sonnet-5";
+  // v2: no assumed default model id. An unverified hardcoded model name
+  // is a silent production-failure risk — fail loudly at request time
+  // instead, with a clear message pointing at the fix.
+  const model = process.env.AI_MODEL;
+  if (!model) {
+    throw new Error("AI_MODEL is not configured on the server. Set it to a model id your Anthropic account has access to.");
+  }
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

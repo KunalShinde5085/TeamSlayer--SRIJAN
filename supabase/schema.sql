@@ -37,7 +37,12 @@ create table if not exists tasks (
   assignee_id   uuid references team_members(id) on delete set null,
   due_date      date,
   priority      text default 'normal' check (priority in ('low','normal','high')),
-  status        text not null default 'pending' check (status in ('pending','in_progress','completed','overdue')),
+  -- v2: "overdue" is intentionally NOT a status. It's a workflow state
+  -- (pending/in_progress/completed/cancelled) plus a computed flag based on
+  -- due_date (see js/utils/date.js#isTaskOverdue) — so a task can be
+  -- in_progress AND overdue at once, instead of "overdue" clobbering
+  -- whatever workflow state it was actually in.
+  status        text not null default 'pending' check (status in ('pending','in_progress','completed','cancelled')),
   source        text default 'manual' check (source in ('manual','ai_inbox','recovery_plan')),
   created_at    timestamptz not null default now(),
   completed_at  timestamptz

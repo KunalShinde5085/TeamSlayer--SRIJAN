@@ -1,0 +1,29 @@
+-- ============================================================
+-- PRODUCTION RLS — reference only, NOT applied automatically.
+--
+-- The current schema.sql still uses `using (true) with check (true)`
+-- policies, because this project has no real login system yet
+-- (see README_V2.md, Phase 2). Adding auth is a bigger, separate change:
+-- it needs Supabase Auth wired up in the browser, a profiles row created
+-- on signup, and every existing table given a user_id/workspace_id
+-- column — not just a policy swap. Doing the policy swap alone, without
+-- those columns and the auth flow, would just break the app (every
+-- query would return nothing, since auth.uid() would never match).
+--
+-- This file is what to run ONCE that work is done, so the real security
+-- fix doesn't get lost as a to-do. Adjust table/column names to match
+-- whatever the auth migration actually adds.
+-- ============================================================
+
+-- Example, assuming a `user_id uuid references auth.users(id)` column
+-- has been added to `tasks`, `routines`, and `notifications`:
+
+-- drop policy "demo: anon full access" on tasks;
+-- create policy "Users see own tasks"   on tasks for select using (auth.uid() = user_id);
+-- create policy "Users create own tasks" on tasks for insert with check (auth.uid() = user_id);
+-- create policy "Users update own tasks" on tasks for update using (auth.uid() = user_id);
+-- create policy "Users delete own tasks" on tasks for delete using (auth.uid() = user_id);
+
+-- Repeat the same pattern for routines and notifications.
+-- team_members likely stays workspace-scoped rather than user-scoped —
+-- see the workspace_members design discussed in README_V2.md.

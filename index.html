@@ -82,13 +82,49 @@
 
     <!-- TASKS -->
     <div class="view" id="view-tasks">
-      <div class="page-head"><h1>My Tasks</h1><p>Everything FlowMate has created from your instructions.</p></div>
+      <div class="page-head page-head-row">
+        <div>
+          <h1>My Tasks</h1>
+          <p>Everything FlowMate has created from your instructions.</p>
+        </div>
+        <button class="primary-btn" id="newTaskBtn">+ New task</button>
+      </div>
+      <div class="filter-bar">
+        <input type="text" id="taskSearch" class="field-input filter-search" placeholder="Search tasks…">
+        <select id="filterStatus" class="field-input filter-select">
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In progress</option>
+          <option value="completed">Completed</option>
+          <option value="overdue">Overdue</option>
+        </select>
+        <select id="filterPriority" class="field-input filter-select">
+          <option value="all">All priorities</option>
+          <option value="high">High</option>
+          <option value="normal">Normal</option>
+          <option value="low">Low</option>
+        </select>
+        <select id="filterAssignee" class="field-input filter-select">
+          <option value="all">Everyone</option>
+        </select>
+        <select id="sortTasks" class="field-input filter-select">
+          <option value="due_date">Sort: due date</option>
+          <option value="priority">Sort: priority</option>
+          <option value="newest">Sort: newest</option>
+        </select>
+      </div>
       <div class="card"><div id="fullTaskList"></div></div>
     </div>
 
     <!-- TEAM -->
     <div class="view" id="view-team">
       <div class="page-head"><h1>Team</h1><p>Who's carrying what, and how it's going.</p></div>
+      <div class="card add-member-card">
+        <div class="inbox-row">
+          <input type="text" id="newMemberName" class="field-input" placeholder="Add a team member by name…">
+          <button class="send" id="addMemberBtn">Add</button>
+        </div>
+      </div>
       <div class="card"><div id="teamList"></div></div>
     </div>
 
@@ -118,6 +154,8 @@
   </div>
 </div>
 
+<!-- Modal overlay (task create/edit, delete confirmation) -->
+<div class="modal-overlay" id="modalOverlay"></div>
 
 <!-- Supabase client library -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -127,10 +165,17 @@
 
 <!-- App modules -->
 <script src="js/supabase.js"></script>
-<script src="js/tasks.js"></script>
-<script src="js/routines.js"></script>
-<script src="js/notifications.js"></script>
+<script src="js/utils/date.js"></script>
+<script src="js/utils/storage.js"></script>
+<script src="js/utils/validation.js"></script>
+<script src="js/ui/toast.js"></script>
+<script src="js/ui/modal.js"></script>
+<script src="js/stores/team-store.js"></script>
+<script src="js/stores/task-store.js"></script>
+<script src="js/stores/routine-store.js"></script>
+<script src="js/stores/notification-store.js"></script>
 <script src="js/ai.js"></script>
+<script src="js/demo.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
