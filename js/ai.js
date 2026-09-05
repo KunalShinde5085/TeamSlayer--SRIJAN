@@ -51,11 +51,21 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
       );
     }
 
-    let json;
-    try { json = await response.json(); }
-    catch (_) { throw new FlowMateAIError("The AI returned something we couldn't read. Try rephrasing."); }
+  let json;
+try {
+    json = await response.json();
+} catch (_) {
+    throw new FlowMateAIError("The AI returned something we couldn't read. Try rephrasing.");
+}
 
-    return json;
+// Extract Gemini response text
+const aiText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+if (!aiText) {
+    throw new FlowMateAIError("Gemini returned an empty response. Try again.");
+}
+
+return aiText;
   }
 
   return { parseInstruction, generateRecoveryPlan };
