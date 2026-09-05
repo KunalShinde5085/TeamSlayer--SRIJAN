@@ -25,17 +25,30 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
     headers: {
         "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-        contents: [
-            {
-                parts: [
-                    {
-                        text: payload.text || JSON.stringify(payload)
-                    }
-                ]
-            }
-        ]
-    })
+  body: JSON.stringify({
+    contents: [
+        {
+            parts: [
+                {
+                    text: `
+You are FlowMate AI.
+
+Return ONLY valid JSON.
+Do not use markdown.
+Do not use \`\`\`json.
+Do not add explanations.
+
+User request:
+${payload.text || JSON.stringify(payload)}
+                    `
+                }
+            ]
+        }
+    ],
+    generationConfig: {
+        responseMimeType: "application/json"
+    }
+})
 });
     } catch (networkErr) {
       throw new FlowMateAIError("FlowMate couldn't reach the server. Check your connection and try again.");
